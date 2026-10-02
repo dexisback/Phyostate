@@ -1,0 +1,53 @@
+{
+  "id": "lettuce",
+  "name": "Lettuce",
+  "blurb": "Fast leafy green — no flowering stage; harvested as a head.",
+  "stages": ["SEED", "GERMINATION", "SEEDLING", "VEGETATIVE", "HARVEST"],
+  "min_days": { "SEED": 1, "GERMINATION": 2, "SEEDLING": 2, "VEGETATIVE": 3, "HARVEST": 0 },
+  "max_days": { "SEED": 3, "GERMINATION": 5, "SEEDLING": 6, "VEGETATIVE": 10, "HARVEST": 0 },
+  "icons": {
+    "SEED": "seed",
+    "GERMINATION": "germination",
+    "SEEDLING": "vegetative",
+    "VEGETATIVE": "vegetative",
+    "HARVEST": "harvest"
+  },
+  "rejects": [
+    "a plate of salad",
+    "a bag of salad greens in a supermarket"
+  ],
+  "prompts": {
+    "SEED": [
+      "lettuce seeds sprinkled on soil",
+      "small lettuce seeds being sown in a tray",
+      "a single lettuce seed on dark soil"
+    ],
+    "GERMINATION": [
+      "a tiny lettuce sprout emerging from the soil",
+      "a germinating lettuce seed with a small root and stem",
+      "a lettuce seedling just breaking through the soil surface"
+    ],
+    "SEEDLING": [
+      "a young lettuce seedling with small true leaves",
+      "a small lettuce plant with a few young leaves",
+      "baby lettuce plants in a growing tray"
+    ],
+    "VEGETATIVE": [
+      "a leafy green lettuce head growing in soil",
+      "a rosette of fresh lettuce leaves",
+      "a mature lettuce plant before harvest"
+    ],
+    "HARVEST": [
+      "harvested heads of lettuce in a crate",
+      "freshly cut lettuce heads in a box",
+      "a crate full of picked lettuce at a farm"
+    ]
+  },
+  "demos": {
+    "skip":       { "sequence": ["SEED", "SEEDLING", "VEGETATIVE", "HARVEST"], "durations": [1, 2, 3, 0] },
+    "backward":   { "sequence": ["SEED", "GERMINATION", "SEEDLING", "GERMINATION", "HARVEST"], "durations": [1, 2, 3, 2, 0] },
+    "premature":  { "sequence": ["SEED", "GERMINATION", "SEEDLING", "VEGETATIVE", "HARVEST"], "durations": [1, 1, 3, 3, 0] },
+    "stagnation": { "sequence": ["SEED", "GERMINATION", "SEEDLING", "VEGETATIVE", "HARVEST"], "durations": [1, 2, 9, 3, 0] },
+    "valid":      { "sequence": ["SEED", "GERMINATION", "SEEDLING", "VEGETATIVE", "HARVEST"], "durations": [1, 2, 3, 4, 0] }
+  }
+}

@@ -28,7 +28,11 @@ MAX_TIME = {
 }
 
 
-def verify_sequence(sequence, durations):
+def verify_sequence(sequence, durations, stages=None, min_time=None, max_time=None):
+
+    stages = stages or STAGES
+    min_time = min_time or MIN_TIME
+    max_time = max_time or MAX_TIME
 
     errors = []
 
@@ -44,8 +48,8 @@ def verify_sequence(sequence, durations):
         current = sequence[i]
         next_stage = sequence[i + 1]
 
-        current_index = STAGES.index(current)
-        next_index = STAGES.index(next_stage)
+        current_index = stages.index(current)
+        next_index = stages.index(next_stage)
 
 
         # Backward transition
@@ -72,8 +76,8 @@ def verify_sequence(sequence, durations):
         stage = sequence[i]
         duration = durations[i]
 
-        minimum = MIN_TIME[stage]
-        maximum = MAX_TIME[stage]
+        minimum = min_time[stage]
+        maximum = max_time[stage]
 
 
         # Premature stage

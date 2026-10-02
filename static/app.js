@@ -7,6 +7,9 @@
 
     "use strict";
 
+    // Lets CSS hide no-JS fallback affordances (e.g. the profile "Apply" button)
+    document.documentElement.classList.add("js");
+
     const $ = (sel, root = document) => root.querySelector(sel);
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
     const sleep = ms => new Promise(r => setTimeout(r, reduced.matches ? 0 : ms));
@@ -111,11 +114,20 @@
         try {
             const res = await fetch(url, { method, body, signal: controller.signal });
             window.clearTimeout(timeout);
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            if (!res.ok) {
+                let message = `HTTP ${res.status}`;
+                try {
+                    const body = await res.json();
+                    if (body && body.error) message = body.error;
+                } catch (err) {
+                    /* non-JSON error page — keep the status code */
+                }
+                throw new Error(message);
+            }
             const ok = await apply(await res.text());
             return ok;
         } catch (err) {
-            toast("Request failed — is the Flask server running?", "bad");
+            toast(err && err.message ? err.message : "Request failed — is the Flask server running?", "bad");
             return null;
         } finally {
             window.clearTimeout(timeout);
@@ -444,17 +456,27 @@
     function syncSimUI() {
         const btn = document.getElementById("sim-toggle");
         if (!btn) return;
+        const data = readData();
+        const stagesLen = (data.profile && data.profile.stages)
+            ? data.profile.stages.length
+            : ENGINE.STAGES.length;
         btn.setAttribute("aria-pressed", String(sim.on));
         $(".btn-label", btn).textContent = sim.on
-            ? `Simulating ${Math.min(sim.tick + 1, ENGINE.STAGES.length)}/${ENGINE.STAGES.length}…`
+            ? `Simulating ${Math.min(sim.tick + 1, stagesLen)}/${stagesLen}…`
             : "Simulate crop";
     }
 
     async function simTick() {
         if (!sim.on) return;
 
-        const stage = ENGINE.STAGES[sim.tick % ENGINE.STAGES.length];
-        const days = ENGINE.MIN[stage];
+        // The active crop profile drives the simulation: its stages and
+        // minimum dwell times come straight from the rendered data island.
+        const data = readData();
+        const stages = (data.profile && data.profile.stages) || ENGINE.STAGES;
+        const bounds = data.bounds || ENGINE.BOUNDS;
+
+        const stage = stages[sim.tick % stages.length];
+        const days = (bounds[stage] || [1, 0])[0];
         syncSimUI();
 
         const fd = new FormData();
@@ -470,7 +492,7 @@
 
         sim.tick++;
         if (!sim.on) return;
-        if (sim.tick >= ENGINE.STAGES.length) {
+        if (sim.tick >= stages.length) {
             stopSim();
             return;
         }
@@ -499,6 +521,12 @@
         syncSimUI();
     }
 
+    async function submitProfile(form) {
+        if (!form) return;
+        if (sim.on) stopSim();          // switching crop aborts any running simulation
+        await request("/profile", { method: "POST", body: new FormData(form) });
+    }
+
     /* ------------------------------------------------------------------ */
     /* Delegated events (survive every content swap)                       */
     /* ------------------------------------------------------------------ */
@@ -507,6 +535,11 @@
         if (e.target.id === "predict-form") {
             e.preventDefault();
             submitPredict(e.target);
+            return;
+        }
+        if (e.target.id === "profile-form") {
+            e.preventDefault();
+            submitProfile(e.target);
         }
     });
 
@@ -536,6 +569,7 @@
 
     document.addEventListener("change", e => {
         if (e.target.id === "image-input") showFile(e.target);
+        if (e.target.id === "profile-select") submitProfile(e.target.form);
     });
 
     document.addEventListener("dragover", e => {

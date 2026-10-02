@@ -8,6 +8,8 @@
     <meta name="color-scheme" content="dark">
     <meta name="theme-color" content="#000000">
 
+    <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="white"/><path d="M6 18c0-6.5 4.3-11 11-11.5.4 6.7-4 11.5-11 11.5Z" fill="none" stroke="black" stroke-width="1.6"/></svg>'>
+
     <title>PhytoState · Timed-Automaton Crop Verification</title>
 
     <link rel="stylesheet" href="/static/style.css">
@@ -33,10 +35,24 @@
             </span>
         </a>
 
-        <a class="btn btn-ghost" href="/reset" data-route="/reset" title="Reset sequence">
-            <svg class="ico" viewBox="0 0 24 24"><use href="#i-refresh"></use></svg>
-            <span class="btn-label">Reset</span>
-        </a>
+        <div class="bar-actions">
+
+            <form id="profile-form" action="/profile" method="post">
+                <label class="profile-label" for="profile-select">Crop</label>
+                <select name="id" id="profile-select" aria-label="Active crop profile">
+                    {% for pr in profiles %}
+                    <option value="{{ pr.id }}" {{ 'selected' if pr.id == profile.id }}>{{ pr.name }}</option>
+                    {% endfor %}
+                </select>
+                <button class="btn btn-ghost btn-apply" type="submit">Apply</button>
+            </form>
+
+            <a class="btn btn-ghost" href="/reset" data-route="/reset" title="Reset sequence">
+                <svg class="ico" viewBox="0 0 24 24"><use href="#i-refresh"></use></svg>
+                <span class="btn-label">Reset</span>
+            </a>
+
+        </div>
 
     </div>
 
@@ -90,6 +106,12 @@
             <path d="M5.5 10l1.6 8h9.8l1.6-8"></path>
             <path d="M9 10a3 3 0 0 1 6 0"></path>
             <path d="M10 13.5v2.5M14 13.5v2.5"></path>
+        </symbol>
+
+        <symbol id="i-stage" viewBox="0 0 24 24">
+            <path d="M12 21v-8"></path>
+            <path d="M12 13c0-4-2.5-6-6-6 0 4 2 6 6 6Z"></path>
+            <path d="M12 10c0-3 2-4.5 5.5-4.5 0 3.5-2 4.5-5.5 4.5Z"></path>
         </symbol>
 
         <symbol id="i-image" viewBox="0 0 24 24">
@@ -183,19 +205,10 @@
 
     </svg>
 
-    {% set bounds = {
-        "SEED": [1, 3],
-        "GERMINATION": [2, 5],
-        "VEGETATIVE": [3, 8],
-        "FLOWERING": [2, 5],
-        "FRUITING": [3, 7],
-        "HARVEST": [0, 0]
-    } %}
-
     <!-- Live session data for client-side rendering (Gantt chart, violation flagging) -->
 
     <script type="application/json" id="phyto-data">
-    {{ { "sequence": sequence, "durations": durations, "bounds": bounds }|tojson }}
+    {{ { "sequence": sequence, "durations": durations, "bounds": bounds, "profile": { "id": profile.id, "name": profile.name, "stages": profile.stages }, "icons": icons }|tojson }}
     </script>
 
 
@@ -212,15 +225,23 @@
             <div class="banner-top">
 
                 <strong class="banner-title">
-                    {{ 'Growth sequence verified' if valid else 'Growth sequence rejected' }}
+                    {{ banner_headline or ('Growth sequence verified' if valid else 'Growth sequence rejected') }}
                 </strong>
 
                 {% if prediction %}
 
                 <span class="chip">
                     <svg class="ico" viewBox="0 0 24 24"><use href="#i-scan"></use></svg>
-                    Model output: {{ prediction }}
+                    Model output: {{ prediction.stage }}
                 </span>
+
+                {% if prediction.confidence is not none %}
+
+                <span class="chip tabular {{ 'chip-warn' if prediction.confidence < 0.45 }}">
+                    {{ (prediction.confidence * 100)|round|int }}% · {{ prediction.mode }}
+                </span>
+
+                {% endif %}
 
                 {% endif %}
 
@@ -258,6 +279,9 @@
             <div class="card-head">
                 <svg class="ico" viewBox="0 0 24 24"><use href="#i-scan"></use></svg>
                 <h2 id="h-upload">Stage Analysis</h2>
+                <span class="chip mode-chip" title="Active predictor backend">
+                    {{ 'Neural CLIP' if predictor_mode == 'neural' else 'Simulation mode' }}
+                </span>
                 <button class="btn btn-ghost btn-sim" id="sim-toggle" type="button" aria-pressed="false" title="Fast-forward a full lifecycle — simulated field camera">
                     <svg class="ico" viewBox="0 0 24 24"><use href="#i-play"></use></svg>
                     <span class="btn-label">Simulate crop</span>
@@ -347,7 +371,7 @@
                 <svg class="ico" viewBox="0 0 24 24"><use href="#i-leaf"></use></svg>
                 <h2 id="h-seq">Growth Sequence</h2>
                 {% if sequence %}
-                <span class="chip tabular">{{ sequence|length }}/6 stages</span>
+                <span class="chip tabular">{{ sequence|length }}/{{ profile.stages|length }} stages</span>
                 {% endif %}
             </div>
 
@@ -362,7 +386,7 @@
                     title="{{ stage }} · {{ durations[loop.index0] }} day(s) · allowed {{ bounds[stage][0] }}–{{ bounds[stage][1] }} days"
                 >
                     <span class="tl-dot">
-                        <svg class="ico" viewBox="0 0 24 24"><use href="#i-{{ stage|lower }}"></use></svg>
+                        <svg class="ico" viewBox="0 0 24 24"><use href="#i-{{ icons[stage] }}"></use></svg>
                     </span>
                     <span class="tl-name">{{ stage }}</span>
                     <span class="tl-days tabular">+{{ durations[loop.index0] }}d</span>
@@ -375,7 +399,7 @@
             <div class="stats">
 
                 <div class="stat">
-                    <span class="stat-n tabular">{{ sequence|length }}<small>/6</small></span>
+                    <span class="stat-n tabular">{{ sequence|length }}<small>/{{ profile.stages|length }}</small></span>
                     <span class="stat-l">Stages logged</span>
                 </div>
 
@@ -391,13 +415,13 @@
 
             </div>
 
-            <div class="progress" role="img" aria-label="Lifecycle progress {{ (sequence|length * 100 / 6)|int }}%">
-                <div class="progress-bar" style="width: {{ (sequence|length * 100 / 6)|int }}%"></div>
+            <div class="progress" role="img" aria-label="Lifecycle progress {{ (sequence|length * 100 / (profile.stages|length))|int }}%">
+                <div class="progress-bar" style="width: {{ (sequence|length * 100 / (profile.stages|length))|int }}%"></div>
             </div>
 
             <div class="progress-label">
                 <span>Lifecycle progress</span>
-                <span class="tabular">{{ (sequence|length * 100 / 6)|int }}%</span>
+                <span class="tabular">{{ (sequence|length * 100 / (profile.stages|length))|int }}%</span>
             </div>
 
             {% else %}
@@ -422,7 +446,7 @@
         <div class="card-head">
             <svg class="ico" viewBox="0 0 24 24"><use href="#i-shield"></use></svg>
             <h2 id="h-dfa">Lifecycle Automaton</h2>
-            <span class="chip">timed transition rules</span>
+            <span class="chip">{{ profile.name }} · {{ profile.stages|length }} states</span>
         </div>
 
         <ol class="dfa">
@@ -431,7 +455,7 @@
 
             <li class="dfa-state {{ 'is-logged' if stage in sequence }} {{ 'is-latest' if sequence and stage == sequence[-1] }}">
                 <span class="dfa-dot">
-                    <svg class="ico" viewBox="0 0 24 24"><use href="#i-{{ stage|lower }}"></use></svg>
+                    <svg class="ico" viewBox="0 0 24 24"><use href="#i-{{ icons[stage] }}"></use></svg>
                 </span>
                 <span class="dfa-name">{{ stage }}</span>
                 <span class="dfa-bound tabular">
@@ -491,7 +515,7 @@
 
                         <td>
                             <span class="td-stage">
-                                <svg class="ico" viewBox="0 0 24 24"><use href="#i-{{ stage|lower }}"></use></svg>
+                                <svg class="ico" viewBox="0 0 24 24"><use href="#i-{{ icons[stage] }}"></use></svg>
                                 {{ stage }}
                             </span>
                         </td>
@@ -650,7 +674,15 @@
             <code>GET /demo/stagnation</code>
             <code>GET /demo-backward</code>
             <code>GET /reset</code>
+            <code>POST /profile</code>
+            <code>GET /export</code>
+            <code>GET /health</code>
 
+        </div>
+
+        <div class="footer-actions">
+            <a class="btn btn-ghost btn-sm" href="/export?format=md">Download report (.md)</a>
+            <a class="btn btn-ghost btn-sm" href="/export?format=json">Download report (.json)</a>
         </div>
 
         <p>PhytoState · Flask + Jinja · in-memory session (state clears when the server restarts)</p>

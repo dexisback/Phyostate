@@ -87,6 +87,13 @@ app is one consumer of it.
 
 - **📷 Stage analysis pipeline** — upload a crop photo + dwell duration; the predictor assigns the
   current growth stage and the automaton instantly verdicts the whole sequence.
+- **🧠 Neural stage classifier** — zero-shot CLIP scores each photo against every stage's
+  plain-language description (no training data involved). The UI shows a confidence % per
+  observation, and photos that aren't the active crop get rejected with a reason. Falls back
+  automatically to simulation mode when ML extras aren't installed.
+- **🌾 Species profiles** — tomato, lettuce and wheat each ship their own stage vocabulary and
+  dwell windows; a header dropdown switches crop. New profiles are just JSON files — drop one
+  into `profiles/` and it appears in the dropdown.
 - **🛡️ Timed-automaton verification** — transition rules *and* dwell-time rules, each violation
   reported as a human-readable message.
 - **⏱️ Dwell-Time Ledger** — every logged stage with its actual duration, allowed window, and a
@@ -109,6 +116,8 @@ app is one consumer of it.
   links); with JS, content hot-swaps with subtle transition choreography. Respects
   `prefers-reduced-motion`.
 - **🧩 Zero build step** — no bundler, no npm, no CDN fonts. System font stack, vanilla CSS/JS.
+- **🧯 Hardened intake** — upload size caps, image-type checks, safe UUID storage names, and
+  graceful JSON error responses instead of stack traces.
 
 ---
 
@@ -126,6 +135,27 @@ python3 app.py
 # 3. Open
 #    http://127.0.0.1:5000
 ```
+
+<details>
+<summary><b>Optional: neural classifier (CLIP)</b></summary>
+
+The predictor runs in **simulation mode** by default (works offline, zero heavy deps). To enable
+the real zero-shot CLIP vision backend:
+
+```bash
+pip install torch --index-url https://download.pytorch.org/whl/cpu
+pip install transformers pillow
+
+# Cache the model weights once (afterwards it runs fully offline):
+python3 -c "from transformers import CLIPModel, CLIPProcessor; \
+    CLIPModel.from_pretrained('openai/clip-vit-base-patch32'); \
+    CLIPProcessor.from_pretrained('openai/clip-vit-base-patch32')"
+```
+
+The server preloads the weights on startup; if anything is missing it silently falls back to
+simulation mode (see the mode chip in the UI).
+
+</details>
 
 > **Note:** use `python3`, not `python` — on most modern Linux distros `python` doesn't exist or
 > points elsewhere.
@@ -164,7 +194,13 @@ All state is held in-process (in-memory). Every route returns the full server-re
 | `GET` | `/demo/stagnation` | — | Canned invalid sequence: `VEGETATIVE` dwells 10 days (above its 8-day maximum) |
 | `GET` | `/demo-backward` | — | Canned invalid sequence with a regression: `VEGETATIVE → GERMINATION` (legacy alias of `/demo/backward`) |
 | `GET` | `/demo/<anything>` | — | Any unrecognized type falls through to the **healthy** full lifecycle — handy as the "valid" test case (`/demo/valid`) |
-| `GET` | `/reset` | — | Clears the growth log and rewinds the predictor cursor to `SEED` |
+| `GET` | `/reset` | — | Clears the growth log and rewinds the predictor cursor to the first stage |
+| `POST` | `/profile` | `form`: `id` (profile id) | Switches the active crop profile; clears the lifecycle and rewinds the cursor |
+| `GET` | `/export?format=json\|md` | — | Downloads a verification report (observations, allowed windows, verdict, engine messages) |
+| `GET` | `/health` | — | JSON status: active profile, stages logged, predictor mode, engine version |
+
+Invalid input returns a clean JSON error (`{"error": "..."}`) with the proper status code —
+never a stack trace.
 
 ### Example
 
@@ -181,31 +217,36 @@ verdict with per-rule messages.
 
 ```
 PhytoState/
-├── app.py               # Flask app: routes, in-memory session, glue
-├── predictor.py         # Growth-stage predictor (pluggable interface)
+├── app.py               # Flask app: routes, in-memory session, intake hardening
+├── predictor.py         # Growth-stage predictor: CLIP neural backend + simulation fallback
 ├── automaton.py         # ★ The verification engine (pure Python, no deps)
 ├── requirements.txt     # Flask
+├── profiles/            # Species profiles: stages, dwell bounds, CLIP prompts, demo cases
+│   ├── tomato.json
+│   ├── lettuce.json
+│   └── wheat.json
 ├── templates/
 │   └── index.html       # Single-page dashboard (Jinja2 server-rendered)
 ├── static/
 │   ├── style.css        # Design system (Vercel/Geist-inspired monochrome)
-│   └── app.js           # Progressive enhancement: fetch + hot-swap, previews
-└── uploads/             # Uploaded crop photos land here
+│   └── app.js           # Progressive enhancement: fetch + hot-swap, Gantt, sim
+└── uploads/             # Uploaded crop photos land here (UUID-prefixed names)
 ```
 
 ### The three brains
 
 | Module | Role |
 |---|---|
-| `automaton.py` | `STAGES` order, `MIN_TIME` / `MAX_TIME` dwell tables, `verify_sequence(sequence, durations) → (valid, messages)`. Pure functions, fully deterministic. |
-| `predictor.py` | `predict_stage(image_path) → stage`. Currently a **sequential demo model**: consecutive uploads walk `SEED → … → HARVEST` and wrap around. The interface is the seam for a real model — swap the body for a CNN inference call and nothing else changes. |
-| `app.py` | HTTP layer only: routing, session state (`sequence`, `durations`), orchestration. No business logic. |
+| `automaton.py` | `verify_sequence(sequence, durations, stages, min_time, max_time) → (valid, messages)`. Rule tables are parameters — profiles plug in. Pure functions, fully deterministic. |
+| `predictor.py` | `predict_stage(image_path, stages, prompts) → {stage, confidence, mode}`. **Neural backend:** zero-shot CLIP — the profile's text prompts *are* the training data. **Simulation backend:** sequential stub cycling the profile's stages. Automatic fallback between them. |
+| `app.py` | HTTP layer: routing, session state, intake validation, export. No business logic. |
 
 ---
 
 ## Tech stack
 
 - **Python 3** + **Flask** (SSR with Jinja2 templates)
+- **Optional ML extras**: torch (CPU) + transformers for the zero-shot CLIP backend
 - **Vanilla HTML / CSS / JS** — no frameworks, no bundler, no external assets
 - Design system: monochrome Vercel/Geist-inspired dark theme; white primary accent; semantic
   colors only for verdicts (blue = verified, red = rejected, amber = stagnation)
@@ -224,17 +265,15 @@ PhytoState/
 5. **Click "Run all 5"** in Verification Scenarios — the app replays all five rule violations
    live: skip, backward, premature, stagnation, then the healthy cycle. Each scenario card earns
    a "✓ run" badge.
-6. **Reset** in the header — clean slate for the next run.
+6. **Switch the Crop dropdown to Wheat** — the automaton becomes 7 field stages with long
+   dwell windows; run a scenario again to show the same engine verifying different biology.
+7. **Reset** in the header — clean slate for the next run.
 
 ---
 
 ## Roadmap
 
-- **Real classifier** — replace the sequential stub in `predictor.py` with a trained CNN
-  (e.g. fine-tuned MobileNet on a growth-stage dataset). `predict_stage(image_path)` is the only
-  seam to touch.
-- **Species profiles** — per-crop `MIN_TIME` / `MAX_TIME` tables (tomato ≠ wheat), loaded from
-  config.
+- **Species packs** — more crops (maize, rice, soybean) are pure JSON additions to `profiles/`.
 - **Persistence** — SQLite or Postgres backing store, one session per field/plot instead of one
   global in-memory list.
 - **Alerting** — webhook API when a sequence is rejected (the engine already returns structured
@@ -243,9 +282,9 @@ PhytoState/
 
 ## Known limitations (by design, for the hackathon)
 
-- `predictor.py` is a placeholder that cycles stages — it does not inspect image pixels yet.
-- State is in-memory and global: one shared session, cleared on server restart (or `/reset`).
-- Flask dev server with `debug=True` — use a WSGI server (gunicorn/waitress) if you deploy it.
-- Uploaded filenames are used as-is for the storage path — fine for a demo, sanitize before prod.
-- `duration` must parse as an integer; the engine intentionally accepts `0` so premature
-  transitions can be demonstrated.
+- Without the optional ML extras, the predictor runs in **simulation mode** (sequential stub) —
+  the UI shows which backend is active. The verification engine is fully real either way.
+- State is in-memory and global: one shared session, cleared on server restart (or `/reset`);
+  `/export` produces a durable report of the current session.
+- Flask's built-in server (no WSGI tuning) — fine for a demo; use gunicorn/waitress to deploy.
+- Uploaded files accumulate in `uploads/` (UUID-prefixed, no auto-cleanup).

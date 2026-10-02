@@ -1,0 +1,62 @@
+{
+  "id": "wheat",
+  "name": "Wheat",
+  "blurb": "Cereal crop — seven field stages, long vegetative dwell windows.",
+  "stages": ["SEED", "GERMINATION", "TILLERING", "JOINTING", "HEADING", "RIPENING", "HARVEST"],
+  "min_days": { "SEED": 1, "GERMINATION": 3, "TILLERING": 10, "JOINTING": 15, "HEADING": 5, "RIPENING": 20, "HARVEST": 0 },
+  "max_days": { "SEED": 4, "GERMINATION": 8, "TILLERING": 30, "JOINTING": 40, "HEADING": 12, "RIPENING": 35, "HARVEST": 0 },
+  "icons": {
+    "SEED": "seed",
+    "GERMINATION": "germination",
+    "TILLERING": "vegetative",
+    "JOINTING": "vegetative",
+    "HEADING": "flowering",
+    "RIPENING": "fruiting",
+    "HARVEST": "harvest"
+  },
+  "rejects": [],
+  "prompts": {
+    "SEED": [
+      "wheat kernels being sown into a field",
+      "wheat grains in a farmer's hand before planting",
+      "a wheat seed drill planting grain in soil"
+    ],
+    "GERMINATION": [
+      "a wheat coleoptile emerging from the soil",
+      "young wheat shoots just emerging in rows",
+      "a germinating wheat grain with a small green shoot"
+    ],
+    "TILLERING": [
+      "young wheat plants with several tillers",
+      "a field of small wheat plants with multiple stems per plant",
+      "wheat seedlings forming side shoots"
+    ],
+    "JOINTING": [
+      "wheat stems elongating during the jointing stage",
+      "tall green wheat plants before heads appear",
+      "wheat stalks growing upright with no grain heads yet"
+    ],
+    "HEADING": [
+      "green wheat heads emerging from the flag leaf",
+      "wheat spikes forming on top of the stems",
+      "a wheat field where grain heads are appearing"
+    ],
+    "RIPENING": [
+      "golden ripe wheat ears drying in the field",
+      "amber wheat field ready for harvest",
+      "mature golden wheat spikes bending in the wind"
+    ],
+    "HARVEST": [
+      "a combine harvester cutting wheat",
+      "harvested wheat grain poured into a truck",
+      "bales and piles of harvested wheat straw and grain"
+    ]
+  },
+  "demos": {
+    "skip":       { "sequence": ["SEED", "TILLERING", "JOINTING", "HARVEST"], "durations": [1, 12, 20, 0] },
+    "backward":   { "sequence": ["SEED", "GERMINATION", "TILLERING", "JOINTING", "GERMINATION", "HARVEST"], "durations": [1, 3, 12, 15, 4, 0] },
+    "premature":  { "sequence": ["SEED", "GERMINATION", "TILLERING", "JOINTING", "HEADING", "RIPENING", "HARVEST"], "durations": [1, 3, 10, 15, 2, 20, 0] },
+    "stagnation": { "sequence": ["SEED", "GERMINATION", "TILLERING", "JOINTING", "HEADING", "RIPENING", "HARVEST"], "durations": [1, 3, 10, 50, 5, 20, 0] },
+    "valid":      { "sequence": ["SEED", "GERMINATION", "TILLERING", "JOINTING", "HEADING", "RIPENING", "HARVEST"], "durations": [1, 3, 10, 15, 5, 20, 0] }
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "id": "tomato",
+  "name": "Tomato",
+  "blurb": "Nightshade crop — six stages, moderate dwell windows.",
+  "stages": ["SEED", "GERMINATION", "VEGETATIVE", "FLOWERING", "FRUITING", "HARVEST"],
+  "min_days": { "SEED": 1, "GERMINATION": 2, "VEGETATIVE": 3, "FLOWERING": 2, "FRUITING": 3, "HARVEST": 0 },
+  "max_days": { "SEED": 3, "GERMINATION": 5, "VEGETATIVE": 8, "FLOWERING": 5, "FRUITING": 7, "HARVEST": 0 },
+  "icons": {
+    "SEED": "seed",
+    "GERMINATION": "germination",
+    "VEGETATIVE": "vegetative",
+    "FLOWERING": "flowering",
+    "FRUITING": "fruiting",
+    "HARVEST": "harvest"
+  },
+  "rejects": [],
+  "prompts": {
+    "SEED": [
+      "a single tomato seed resting on dark soil",
+      "tomato seeds being planted in potting soil",
+      "a small seed placed in a seed tray"
+    ],
+    "GERMINATION": [
+      "a tomato sprout emerging from the soil",
+      "a tiny seedling with two seed leaves breaking through soil",
+      "a germinating seed with a small white stem"
+    ],
+    "VEGETATIVE": [
+      "a young green tomato plant with several leaves",
+      "a leafy tomato plant before any flowers appear",
+      "a growing tomato vine with green foliage"
+    ],
+    "FLOWERING": [
+      "a tomato plant with small yellow flowers",
+      "yellow tomato blossoms on the vine",
+      "a flowering tomato plant with open yellow blossoms",
+      "a large colorful flower blossom in close-up",
+      "a blooming flower with vivid petals"
+    ],
+    "FRUITING": [
+      "a tomato plant with green and ripening red fruits",
+      "red tomatoes growing on the vine",
+      "tomato fruits hanging from the plant"
+    ],
+    "HARVEST": [
+      "freshly picked tomatoes in a crate",
+      "harvested red tomatoes in a basket",
+      "a tomato crop collected in harvest boxes"
+    ]
+  },
+  "demos": {
+    "skip":       { "sequence": ["SEED", "FLOWERING", "FRUITING", "HARVEST"], "durations": [1, 2, 3, 0] },
+    "backward":   { "sequence": ["SEED", "GERMINATION", "VEGETATIVE", "GERMINATION", "HARVEST"], "durations": [1, 2, 3, 2, 0] },
+    "premature":  { "sequence": ["SEED", "GERMINATION", "VEGETATIVE", "FLOWERING", "FRUITING", "HARVEST"], "durations": [1, 1, 3, 2, 3, 0] },
+    "stagnation": { "sequence": ["SEED", "GERMINATION", "VEGETATIVE", "FLOWERING", "FRUITING", "HARVEST"], "durations": [1, 2, 10, 2, 3, 0] },
+    "valid":      { "sequence": ["SEED", "GERMINATION", "VEGETATIVE", "FLOWERING", "FRUITING", "HARVEST"], "durations": [1, 2, 3, 2, 3, 0] }
+  }
+}
