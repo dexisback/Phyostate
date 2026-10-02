@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "make-interfaces-feel-better": {
+      "source": "jakubkrehel/make-interfaces-feel-better",
+      "sourceType": "github",
+      "skillPath": "skills/make-interfaces-feel-better/SKILL.md",
+      "computedHash": "c8b15b529e088a318b2d3c17f0a97e15a7b1ce9ddab8bbdf9209e6ab7315cbde"
+    },
+    "userinterface-wiki": {
+      "source": "raphaelsalaja/userinterface-wiki",
+      "sourceType": "github",
+      "skillPath": "skills/SKILL.md",
+      "computedHash": "7bd58aa2aaf874dd421b18700ee688b02ce72276612d7115ad6849d4878e115e"
+    }
+  }
+}

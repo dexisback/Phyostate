@@ -1,0 +1,1533 @@
+/* ==========================================================================
+   PhytoState — design system (Vercel / Geist palette)
+   Monochrome base, white accent, blue/amber/red semantics.
+   Tokens first, then components.
+   ========================================================================== */
+
+:root {
+
+    color-scheme: dark;
+
+    /* Surfaces */
+    --bg: #000000;
+    --surface: #0a0a0a;
+    --surface-2: #111111;
+    --surface-3: #171717;
+
+    /* Text */
+    --text: #ededed;
+    --muted: #a1a1a1;
+    --faint: #707070;
+
+    /* Accent — white (Vercel primary) */
+    --accent: #ffffff;
+    --accent-hover: #e6e6e6;
+    --accent-ink: #000000;
+    --accent-soft: rgba(255, 255, 255, 0.08);
+    --accent-line: rgba(255, 255, 255, 0.3);
+
+    /* Semantic — Geist blue / amber / red */
+    --info: #74b0ff;
+    --info-soft: rgba(0, 112, 243, 0.16);
+    --info-line: rgba(0, 112, 243, 0.45);
+    --danger: #ff6d6d;
+    --danger-soft: rgba(239, 68, 68, 0.14);
+    --danger-line: rgba(239, 68, 68, 0.45);
+    --warn: #ffb224;
+    --warn-soft: rgba(245, 166, 35, 0.13);
+    --warn-line: rgba(245, 166, 35, 0.45);
+
+    /* Lines & shadows (dark mode: white ring instead of layered depth) */
+    --line: rgba(255, 255, 255, 0.10);
+    --line-strong: rgba(255, 255, 255, 0.18);
+    --ring: 0 0 0 1px rgba(255, 255, 255, 0.10);
+    --ring-hover: 0 0 0 1px rgba(255, 255, 255, 0.18);
+    --lift: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 28px -14px rgba(0, 0, 0, 0.6);
+    --pop: 0 0 0 1px rgba(255, 255, 255, 0.12), 0 20px 48px -20px rgba(0, 0, 0, 0.8);
+
+    /* Radii — concentric relationships below */
+    --r-card: 20px;
+    --r-panel: 12px;
+    --r-btn: 10px;
+
+    /* Motion — one consistent pair, reused everywhere */
+    --e-out: cubic-bezier(0.2, 0, 0, 1);
+    --t-fast: 150ms;
+    --t-slow: 240ms;
+}
+
+
+/* --------------------------------------------------------------------------
+   Base
+   -------------------------------------------------------------------------- */
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text);
+    background:
+        radial-gradient(1100px 520px at 50% -12%, rgba(255, 255, 255, 0.05), transparent 70%),
+        var(--bg);
+}
+
+h1, h2, h3 {
+    margin: 0;
+    text-wrap: balance;
+}
+
+p, li {
+    text-wrap: pretty;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+button {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+}
+
+input {
+    font: inherit;
+    color: inherit;
+}
+
+img {
+    /* Image outline — dark mode rule: pure white at 10%, inset, no layout impact */
+    outline: 1px solid rgba(255, 255, 255, 0.1);
+    outline-offset: -1px;
+}
+
+::selection {
+    background: rgba(255, 255, 255, 0.22);
+}
+
+:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.tabular {
+    font-variant-numeric: tabular-nums;
+}
+
+.ico {
+    width: 18px;
+    height: 18px;
+    flex: none;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+
+/* --------------------------------------------------------------------------
+   Shell & top bar
+   -------------------------------------------------------------------------- */
+
+.shell {
+    max-width: 1120px;
+    margin-inline: auto;
+    padding-inline: 24px;
+}
+
+.topbar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px) saturate(1.2);
+    -webkit-backdrop-filter: blur(10px) saturate(1.2);
+    border-bottom: 1px solid var(--line);
+}
+
+.bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-block: 12px;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.logo {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    color: var(--accent-ink);
+    background: var(--accent);
+    box-shadow: 0 8px 22px -12px rgba(255, 255, 255, 0.35);
+}
+
+.logo .ico {
+    width: 20px;
+    height: 20px;
+    stroke-width: 1.8;
+}
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+}
+
+.brand-text strong {
+    font-size: 15.5px;
+    font-weight: 650;
+    letter-spacing: 0.01em;
+}
+
+.brand-text small {
+    font-size: 11px;
+    color: var(--faint);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+/* --------------------------------------------------------------------------
+   Page & layout
+   -------------------------------------------------------------------------- */
+
+.page {
+    padding-block: 24px 56px;
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 20px;
+    align-items: start;
+}
+
+
+/* --------------------------------------------------------------------------
+   Cards
+   -------------------------------------------------------------------------- */
+
+.card,
+.section {
+    background: var(--surface);
+    border-radius: var(--r-card);
+    box-shadow: var(--ring);
+    padding: 22px;
+}
+
+.card + .card,
+.card + .section,
+.section + .section,
+.section + .card,
+.layout + .card,
+.layout + .section,
+.banner + .layout,
+.banner + .card {
+    margin-top: 20px;
+}
+
+.card-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.card-head .ico {
+    color: var(--text);
+    width: 18px;
+    height: 18px;
+}
+
+.card-head h2 {
+    font-size: 15px;
+    font-weight: 650;
+}
+
+.card-head .chip {
+    margin-left: auto;
+}
+
+
+/* --------------------------------------------------------------------------
+   Banner
+   -------------------------------------------------------------------------- */
+
+.banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px 18px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    box-shadow: var(--ring);
+}
+
+.banner-ok {
+    background: var(--info-soft);
+    box-shadow: 0 0 0 1px var(--info-line);
+}
+
+.banner-bad {
+    background: var(--danger-soft);
+    box-shadow: 0 0 0 1px var(--danger-line);
+}
+
+.banner-ico {
+    width: 22px;
+    height: 22px;
+    margin-top: 3px;
+}
+
+.banner-ok .banner-ico {
+    color: var(--info);
+}
+
+.banner-bad .banner-ico {
+    color: var(--danger);
+}
+
+.banner-body {
+    min-width: 0;
+    flex: 1;
+}
+
+.banner-top {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.banner-title {
+    font-size: 15px;
+    font-weight: 650;
+}
+
+.banner-msgs {
+    list-style: none;
+    margin: 8px 0 0;
+    padding: 0;
+    display: grid;
+    gap: 4px;
+}
+
+.banner-msgs li {
+    font-size: 13.5px;
+    color: var(--muted);
+    padding-left: 16px;
+    position: relative;
+}
+
+.banner-msgs li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.62em;
+    width: 5px;
+    height: 5px;
+    border-radius: 999px;
+    background: currentColor;
+    opacity: 0.6;
+}
+
+.banner:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--accent);
+}
+
+
+/* --------------------------------------------------------------------------
+   Chips & pills
+   -------------------------------------------------------------------------- */
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 550;
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: var(--ring);
+    white-space: nowrap;
+}
+
+.chip .ico {
+    width: 13px;
+    height: 13px;
+}
+
+.chip-bad {
+    color: var(--danger);
+    background: var(--danger-soft);
+    box-shadow: 0 0 0 1px var(--danger-line);
+}
+
+.pill {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.pill-ok {
+    color: var(--info);
+    background: var(--info-soft);
+    box-shadow: 0 0 0 1px var(--info-line);
+}
+
+.pill-warn {
+    color: var(--warn);
+    background: var(--warn-soft);
+    box-shadow: 0 0 0 1px var(--warn-line);
+}
+
+.pill-bad {
+    color: var(--danger);
+    background: var(--danger-soft);
+    box-shadow: 0 0 0 1px var(--danger-line);
+}
+
+
+/* --------------------------------------------------------------------------
+   Buttons
+   -------------------------------------------------------------------------- */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 44px;
+    padding: 0 18px;
+    border-radius: var(--r-btn);
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    /* exact properties only — never `transition: all` */
+    transition:
+        scale var(--t-fast) var(--e-out),
+        box-shadow var(--t-fast) var(--e-out),
+        background-color var(--t-fast) var(--e-out),
+        color var(--t-fast) var(--e-out);
+}
+
+.btn:active {
+    scale: 0.96;
+}
+
+.btn-primary {
+    color: var(--accent-ink);
+    background: var(--accent);
+}
+
+.btn-primary:hover {
+    background: var(--accent-hover);
+}
+
+.btn-ghost {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.04);
+    box-shadow: var(--ring);
+}
+
+.btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: var(--ring-hover);
+}
+
+.btn-block {
+    width: 100%;
+    margin-top: 18px;
+}
+
+.btn[disabled],
+.busy {
+    opacity: 0.55;
+    pointer-events: none;
+}
+
+.ico-play {
+    margin-left: 2px; /* optical centering for the triangle */
+}
+
+/* Spinner visibility is class-driven — the [hidden] attribute is
+   unreliable here because author display rules override it. */
+.btn .spin {
+    display: none;
+    animation: spin 700ms linear infinite;
+}
+
+.btn.loading .spin {
+    display: block;
+}
+
+@keyframes spin {
+    to { rotate: 360deg; }
+}
+
+
+/* --------------------------------------------------------------------------
+   Form
+   -------------------------------------------------------------------------- */
+
+.label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 16px 0 8px;
+}
+
+form .label:first-of-type {
+    margin-top: 0;
+}
+
+/* Visually hidden but focusable */
+.dropzone input[type="file"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+}
+
+.dropzone {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 150px;
+    padding: 18px;
+    border: 1.5px dashed var(--line-strong);
+    border-radius: var(--r-panel);
+    text-align: center;
+    cursor: pointer;
+    transition:
+        border-color var(--t-fast) var(--e-out),
+        background-color var(--t-fast) var(--e-out);
+}
+
+.dropzone:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.dropzone:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.12);
+}
+
+.dropzone.drag {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+}
+
+/* Visibility is class-driven — do NOT use the [hidden] attribute here,
+   author display rules override it and both states would show at once. */
+.dropzone .dz-file {
+    display: none;
+}
+
+.dropzone.has-file .dz-file {
+    display: flex;
+}
+
+.dropzone.has-file .dz-empty {
+    display: none;
+}
+
+.dz-empty {
+    display: grid;
+    justify-items: center;
+    gap: 4px;
+}
+
+.dz-empty .ico {
+    width: 24px;
+    height: 24px;
+    color: var(--faint);
+    margin-bottom: 4px;
+}
+
+.dz-empty strong {
+    font-size: 13.5px;
+    font-weight: 600;
+}
+
+.dz-empty span {
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.dz-file {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+    width: 100%;
+}
+
+.dz-file img {
+    width: 56px;
+    height: 56px;
+    object-fit: cover;
+    border-radius: 8px;
+    background: var(--surface-3);
+}
+
+.dz-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+}
+
+.dz-meta strong {
+    font-size: 13px;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dz-meta small {
+    font-size: 11px;
+    color: var(--faint);
+}
+
+.dz-replace {
+    font-size: 11.5px;
+    color: var(--accent);
+    margin-top: 3px;
+}
+
+.stepper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.step {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--r-btn);
+    background: rgba(255, 255, 255, 0.04);
+    box-shadow: var(--ring);
+    transition:
+        scale var(--t-fast) var(--e-out),
+        background-color var(--t-fast) var(--e-out),
+        box-shadow var(--t-fast) var(--e-out);
+}
+
+.step:hover {
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: var(--ring-hover);
+}
+
+.step:active {
+    scale: 0.96;
+}
+
+.step .ico {
+    width: 16px;
+    height: 16px;
+}
+
+.stepper input[type="number"] {
+    width: 64px;
+    height: 40px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    background: rgba(255, 255, 255, 0.04);
+    border: 0;
+    border-radius: var(--r-btn);
+    box-shadow: var(--ring);
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.stepper input[type="number"]::-webkit-outer-spin-button,
+.stepper input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.hint {
+    font-size: 12px;
+    color: var(--faint);
+    margin: 10px 0 0;
+}
+
+
+/* --------------------------------------------------------------------------
+   Timeline
+   -------------------------------------------------------------------------- */
+
+.tl {
+    list-style: none;
+    display: flex;
+    margin: 4px 0 0;
+    padding: 4px 2px 8px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+}
+
+.tl-node {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    min-width: 92px;
+    text-align: center;
+}
+
+.tl-node + .tl-node {
+    margin-left: 26px;
+}
+
+.tl-node + .tl-node::before {
+    content: "";
+    position: absolute;
+    top: 21px;
+    left: -34px;
+    width: 34px;
+    height: 2px;
+    background: var(--line);
+}
+
+.tl-dot {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    background: var(--surface-3);
+    box-shadow: var(--ring);
+    color: var(--muted);
+    transition:
+        background-color var(--t-fast) var(--e-out),
+        box-shadow var(--t-fast) var(--e-out),
+        color var(--t-fast) var(--e-out);
+}
+
+.tl-dot .ico {
+    width: 20px;
+    height: 20px;
+}
+
+.tl-latest .tl-dot {
+    color: var(--accent-ink);
+    background: var(--accent);
+    box-shadow: 0 10px 26px -10px rgba(255, 255, 255, 0.4);
+}
+
+.tl-name {
+    font-size: 10.5px;
+    font-weight: 650;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+}
+
+.tl-latest .tl-name {
+    color: var(--text);
+}
+
+.tl-days {
+    font-size: 11px;
+    font-weight: 550;
+    color: var(--muted);
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+
+/* --------------------------------------------------------------------------
+   Stats & progress
+   -------------------------------------------------------------------------- */
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 12px 14px;
+    border-radius: var(--r-panel);
+    background: rgba(255, 255, 255, 0.03);
+    box-shadow: var(--ring);
+}
+
+.stat-n {
+    font-size: 24px;
+    font-weight: 650;
+    line-height: 1.2;
+}
+
+.stat-n small {
+    font-size: 13px;
+    font-weight: 550;
+    color: var(--faint);
+    margin-left: 2px;
+}
+
+.stat-l {
+    font-size: 11px;
+    font-weight: 550;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--faint);
+}
+
+.progress {
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    margin-top: 16px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    border-radius: inherit;
+    background: var(--accent);
+    transition: width 300ms var(--e-out);
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--faint);
+    margin-top: 6px;
+}
+
+.empty {
+    display: grid;
+    justify-items: center;
+    gap: 6px;
+    text-align: center;
+    padding: 32px 20px;
+    border: 1.5px dashed var(--line);
+    border-radius: var(--r-panel);
+}
+
+.empty .ico {
+    width: 28px;
+    height: 28px;
+    color: var(--faint);
+    margin-bottom: 4px;
+}
+
+.empty strong {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.empty span {
+    font-size: 13px;
+    color: var(--muted);
+    max-width: 320px;
+}
+
+
+/* --------------------------------------------------------------------------
+   Automaton diagram
+   -------------------------------------------------------------------------- */
+
+.dfa {
+    list-style: none;
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    margin: 0;
+    padding: 4px 2px 8px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+}
+
+.dfa-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    min-width: 108px;
+    padding: 12px 10px 10px;
+    border-radius: var(--r-panel);
+    text-align: center;
+    opacity: 0.55;
+    transition: opacity var(--t-fast) var(--e-out);
+}
+
+.dfa-state.is-logged,
+.dfa-state.is-latest {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.03);
+    box-shadow: var(--ring);
+}
+
+.dfa-state.is-latest {
+    box-shadow: 0 0 0 1px var(--accent-line);
+}
+
+.dfa-dot {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    background: var(--surface-3);
+    box-shadow: var(--ring);
+    color: var(--muted);
+}
+
+.dfa-dot .ico {
+    width: 19px;
+    height: 19px;
+}
+
+.is-logged .dfa-dot {
+    color: var(--text);
+    background: var(--accent-soft);
+    box-shadow: 0 0 0 1px var(--accent-line);
+}
+
+.is-latest .dfa-dot {
+    color: var(--accent-ink);
+    background: var(--accent);
+    box-shadow: 0 8px 20px -10px rgba(255, 255, 255, 0.4);
+}
+
+.dfa-name {
+    font-size: 10.5px;
+    font-weight: 650;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+}
+
+.is-logged .dfa-name,
+.is-latest .dfa-name {
+    color: var(--text);
+}
+
+.dfa-bound {
+    font-size: 10.5px;
+    color: var(--faint);
+}
+
+.dfa-arrow {
+    color: var(--faint);
+    margin-top: 21px;
+}
+
+.dfa-arrow .ico {
+    width: 15px;
+    height: 15px;
+}
+
+
+/* --------------------------------------------------------------------------
+   Verdict flagging — engine messages light up the offending transitions
+   -------------------------------------------------------------------------- */
+
+.dfa-state.is-flagged {
+    background: var(--danger-soft);
+    box-shadow: 0 0 0 1px var(--danger-line);
+    opacity: 1;
+}
+
+.is-flagged .dfa-dot {
+    color: var(--danger);
+    background: var(--danger-soft);
+    box-shadow: 0 0 0 1px var(--danger-line);
+}
+
+.is-flagged .dfa-name {
+    color: var(--danger);
+}
+
+.dfa-arrow.is-flagged {
+    color: var(--danger);
+}
+
+.tl-flagged .tl-dot {
+    color: var(--danger);
+    background: var(--danger-soft);
+    box-shadow: 0 0 0 1px var(--danger-line);
+}
+
+.tl-flagged .tl-name {
+    color: var(--danger);
+}
+
+tr.row-bad {
+    background: var(--danger-soft);
+}
+
+tr.row-warn {
+    background: var(--warn-soft);
+}
+
+
+/* --------------------------------------------------------------------------
+   Dwell-time Gantt (client-rendered, dependency-free)
+   -------------------------------------------------------------------------- */
+
+.gantt {
+    position: relative;
+    display: grid;
+    gap: 6px;
+    margin: 2px 0 18px;
+}
+
+.gantt:empty {
+    display: none;
+}
+
+.gantt-row {
+    display: grid;
+    grid-template-columns: 96px 1fr;
+    align-items: center;
+    gap: 10px;
+}
+
+.gantt-label {
+    font-size: 10.5px;
+    font-weight: 650;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.gantt-track {
+    position: relative;
+    height: 22px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.gantt-track i {
+    position: absolute;
+    top: -2px;
+    bottom: -2px;
+    width: 1px;
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.gantt-band {
+    position: absolute;
+    top: 1px;
+    bottom: 1px;
+    border: 1px dashed rgba(255, 255, 255, 0.25);
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.gantt-bar {
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    min-width: 2px;
+    border-radius: 4px;
+    background: var(--accent);
+}
+
+.gantt-bar.st-warn {
+    background: var(--warn);
+}
+
+.gantt-bar.st-bad {
+    background: var(--danger);
+}
+
+.gantt-axis-track {
+    position: relative;
+    height: 16px;
+}
+
+.gantt-axis-track b {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    font-size: 9.5px;
+    font-weight: 500;
+    color: var(--faint);
+}
+
+
+/* --------------------------------------------------------------------------
+   Camera simulation toggle
+   -------------------------------------------------------------------------- */
+
+.btn-sim {
+    height: 40px;
+    padding: 0 12px;
+    font-size: 12.5px;
+    margin-left: auto;
+    gap: 6px;
+}
+
+.btn-sim .ico {
+    width: 14px;
+    height: 14px;
+}
+
+.btn-sim[aria-pressed="true"] {
+    background: var(--accent);
+    color: var(--accent-ink);
+    box-shadow: none;
+}
+
+.btn-sim[aria-pressed="true"]:hover {
+    background: var(--accent-hover);
+}
+
+
+/* --------------------------------------------------------------------------
+   Table
+   -------------------------------------------------------------------------- */
+
+.table-wrap {
+    border: 1px solid var(--line);
+    border-radius: var(--r-panel);
+    overflow: hidden;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+}
+
+th, td {
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+}
+
+th {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+tbody tr {
+    transition: background-color 100ms ease-out;
+}
+
+tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+.num {
+    text-align: right;
+}
+
+td.num {
+    color: var(--muted);
+}
+
+.td-stage {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+}
+
+.td-stage .ico {
+    width: 16px;
+    height: 16px;
+    color: var(--muted);
+}
+
+
+/* --------------------------------------------------------------------------
+   Sections
+   -------------------------------------------------------------------------- */
+
+.section-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.section-head h2 {
+    font-size: 17px;
+    font-weight: 650;
+}
+
+.section-head p {
+    font-size: 13px;
+    color: var(--muted);
+    margin: 3px 0 0;
+    max-width: 60ch;
+}
+
+
+/* --------------------------------------------------------------------------
+   Scenarios
+   -------------------------------------------------------------------------- */
+
+.scenarios {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 14px;
+}
+
+.demo {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 16px;
+    border-radius: 16px;
+    background: var(--surface-2);
+    box-shadow: var(--ring);
+    transition:
+        translate var(--t-fast) var(--e-out),
+        box-shadow var(--t-fast) var(--e-out),
+        background-color var(--t-fast) var(--e-out),
+        scale var(--t-fast) var(--e-out);
+}
+
+.demo:hover {
+    translate: 0 -2px;
+    background: var(--surface-3);
+    box-shadow: var(--ring-hover);
+}
+
+.demo:active {
+    scale: 0.96;
+}
+
+.demo-ico {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    color: var(--text);
+    background: var(--accent-soft);
+    margin-bottom: 4px;
+}
+
+.demo-ico .ico {
+    width: 18px;
+    height: 18px;
+}
+
+.demo strong {
+    font-size: 13.5px;
+    font-weight: 650;
+}
+
+.demo-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.demo code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 10.5px;
+    color: var(--faint);
+    margin-top: 2px;
+}
+
+.demo.busy {
+    opacity: 0.55;
+    pointer-events: none;
+}
+
+.demo-done {
+    display: none;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--text);
+    background: var(--accent-soft);
+    box-shadow: 0 0 0 1px var(--accent-line);
+}
+
+.demo-done .ico {
+    width: 11px;
+    height: 11px;
+    stroke-width: 2;
+}
+
+.demo.done .demo-done {
+    display: inline-flex;
+}
+
+
+/* --------------------------------------------------------------------------
+   Features
+   -------------------------------------------------------------------------- */
+
+.features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 14px;
+}
+
+.feature {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 16px;
+    border-radius: 16px;
+    background: var(--surface-2);
+    box-shadow: var(--ring);
+}
+
+.feat-ico {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    color: var(--text);
+    background: var(--accent-soft);
+    margin-bottom: 4px;
+}
+
+.feat-ico .ico {
+    width: 18px;
+    height: 18px;
+}
+
+.feature strong {
+    font-size: 13.5px;
+    font-weight: 650;
+}
+
+.feature span {
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.55;
+}
+
+.feature code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 11px;
+    color: var(--text);
+}
+
+
+/* --------------------------------------------------------------------------
+   Footer
+   -------------------------------------------------------------------------- */
+
+.footer {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+}
+
+.endpoints {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.endpoints code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--surface-2);
+    box-shadow: var(--ring);
+    border-radius: 8px;
+    padding: 5px 10px;
+}
+
+.footer p {
+    font-size: 12px;
+    color: var(--faint);
+    margin: 14px 0 0;
+}
+
+
+/* --------------------------------------------------------------------------
+   Toast
+   -------------------------------------------------------------------------- */
+
+#toast {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    border-radius: 999px;
+    font-size: 13px;
+    background: var(--surface-3);
+    box-shadow: var(--pop);
+    opacity: 0;
+    translate: -50% 8px;
+    pointer-events: none;
+    transition:
+        opacity 200ms var(--e-out),
+        translate 200ms var(--e-out);
+}
+
+#toast.show {
+    opacity: 1;
+    translate: -50% 0;
+}
+
+#toast[data-kind="bad"] {
+    color: var(--danger);
+}
+
+#toast .ico {
+    width: 16px;
+    height: 16px;
+}
+
+
+/* --------------------------------------------------------------------------
+   Entrance choreography (one-shot, section level)
+   -------------------------------------------------------------------------- */
+
+.anim {
+    transition:
+        opacity var(--t-slow) var(--e-out),
+        transform var(--t-slow) var(--e-out),
+        filter var(--t-slow) var(--e-out);
+    transition-delay: var(--d, 0ms);
+}
+
+.swap-in .anim {
+    opacity: 0;
+    transform: translateY(12px);
+    filter: blur(4px);
+}
+
+.swap-out .anim {
+    opacity: 0;
+    transform: translateY(-8px);
+    filter: blur(4px);
+    transition-duration: var(--t-fast);
+}
+
+
+/* --------------------------------------------------------------------------
+   Reduced motion — static cues remain, movement removed
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *, *::before, *::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        transition-delay: 0ms !important;
+    }
+
+    .anim {
+        opacity: 1;
+        transform: none;
+        filter: none;
+    }
+}
+
+
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 920px) {
+
+    .layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 780px) {
+
+    .brand-text small {
+        display: none;
+    }
+
+    .page {
+        padding-inline: 16px;
+    }
+
+    .topbar .shell,
+    .shell {
+        padding-inline: 16px;
+    }
+
+    .card,
+    .section {
+        padding: 18px;
+    }
+}
