@@ -1,0 +1,24 @@
+{
+  "1-seed": {
+    "url": "https://live.staticflickr.com/120/312514946_f47c80ddfd_b.jpg",
+    "title": "No-dig garden update, 3/12/06",
+    "source": "https://www.flickr.com/photos/20313014@N00/312514946"
+  },
+  "3-vegetative": {
+    "url": "https://live.staticflickr.com/4029/4523972691_ca92e27636_b.jpg",
+    "title": "tomato sprouts, day 13",
+    "source": "https://www.flickr.com/photos/82954612@N00/4523972691"
+  },
+  "4-flowering": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/99/Tomato_flowers_and_young_fruits_-_geograph.org.uk_-_7201356.jpg/960px-Tomato_flowers_and_young_fruits_-_geograph.org.uk_-_7201356.jpg",
+    "title": "File:Tomato flowers and young fruits - geograph.org.uk - 7201356.jpg"
+  },
+  "5-fruiting": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f7/Vine-Ripened_Tomatoes%2C_Photography_by_David_Adam_Kess%2C_Fresh_Tomatoes_in_Espa%C3%B1a.jpg/960px-Vine-Ripened_Tomatoes%2C_Photography_by_David_Adam_Kess%2C_Fresh_Tomatoes_in_Espa%C3%B1a.jpg",
+    "title": "File:Vine-Ripened Tomatoes, Photography by David Adam Kess, Fresh Tomatoes in Espa\u00f1a.jpg"
+  },
+  "6-harvest": {
+    "url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ef/%27Kon_Bilahi%27_or_Cherry_tomato_or_baby_tomato_harvest.jpg/960px-%27Kon_Bilahi%27_or_Cherry_tomato_or_baby_tomato_harvest.jpg",
+    "title": "File:'Kon Bilahi' or Cherry tomato or baby tomato harvest.jpg"
+  }
+}

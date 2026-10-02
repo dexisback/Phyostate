@@ -1,0 +1,32 @@
+{
+  "1-seed.jpg": {
+    "expected": "SEED",
+    "stage": "SEED",
+    "confidence": 0.5471
+  },
+  "2-germination.jpg": {
+    "expected": "GERMINATION",
+    "stage": "GERMINATION",
+    "confidence": 0.7049
+  },
+  "3-vegetative.jpg": {
+    "expected": "VEGETATIVE",
+    "stage": "VEGETATIVE",
+    "confidence": 0.7033
+  },
+  "4-flowering.jpg": {
+    "expected": "FLOWERING",
+    "stage": "FLOWERING",
+    "confidence": 0.9973
+  },
+  "5-fruiting.jpg": {
+    "expected": "FRUITING",
+    "stage": "FRUITING",
+    "confidence": 0.6154
+  },
+  "6-harvest.jpg": {
+    "expected": "HARVEST",
+    "stage": "HARVEST",
+    "confidence": 0.9223
+  }
+}
