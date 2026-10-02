@@ -8,6 +8,10 @@
 
     color-scheme: dark;
 
+    /* Typography */
+    --font-sans: "Geist", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
     /* Surfaces */
     --bg: #000000;
     --surface: #0a0a0a;
@@ -51,9 +55,31 @@
     --r-btn: 10px;
 
     /* Motion — one consistent pair, reused everywhere */
-    --e-out: cubic-bezier(0.2, 0, 0, 1);
+    --e-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --e-in: cubic-bezier(0.4, 0, 1, 1);
     --t-fast: 150ms;
     --t-slow: 240ms;
+}
+
+
+/* --------------------------------------------------------------------------
+   Fonts — Geist + Geist Mono (SIL OFL), served locally, offline-safe
+   -------------------------------------------------------------------------- */
+
+@font-face {
+    font-family: "Geist";
+    src: url("/static/fonts/Geist-Variable.woff2") format("woff2");
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Geist Mono";
+    src: url("/static/fonts/GeistMono-Variable.woff2") format("woff2");
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
 }
 
 
@@ -72,9 +98,10 @@ html {
 
 body {
     margin: 0;
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: var(--font-sans);
     font-size: 15px;
     line-height: 1.6;
+    letter-spacing: -0.011em;
     color: var(--text);
     background:
         radial-gradient(1100px 520px at 50% -12%, rgba(255, 255, 255, 0.05), transparent 70%),
@@ -232,6 +259,54 @@ img {
 
 
 /* --------------------------------------------------------------------------
+   Hero
+   -------------------------------------------------------------------------- */
+
+.hero {
+    padding: 36px 0 8px;
+}
+
+.eyebrow {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--faint);
+}
+
+.hero-title {
+    font-size: clamp(30px, 4.5vw, 42px);
+    font-weight: 650;
+    letter-spacing: -0.035em;
+    line-height: 1.12;
+    margin: 12px 0 14px;
+}
+
+.hero-sub {
+    font-size: 15px;
+    color: var(--muted);
+    max-width: 64ch;
+    margin: 0;
+}
+
+.hero-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+.hero + .banner {
+    margin-top: 24px;
+}
+
+.hero + .layout {
+    margin-top: 32px;
+}
+
+
+/* --------------------------------------------------------------------------
    Cards
    -------------------------------------------------------------------------- */
 
@@ -240,7 +315,19 @@ img {
     background: var(--surface);
     border-radius: var(--r-card);
     box-shadow: var(--ring);
-    padding: 22px;
+    padding: 24px;
+    scroll-margin-top: 84px;
+    transition: box-shadow 200ms var(--e-out);
+}
+
+.card.spotlight {
+    box-shadow: 0 0 0 2px var(--accent);
+}
+
+.card-sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin: -6px 0 14px;
 }
 
 .card + .card,
@@ -499,6 +586,10 @@ img {
 
 @keyframes spin {
     to { rotate: 360deg; }
+}
+
+@keyframes grow-x {
+    from { transform: scaleX(0); }
 }
 
 
@@ -805,8 +896,9 @@ form .label:first-of-type {
 }
 
 .stat-n {
-    font-size: 24px;
+    font-size: 26px;
     font-weight: 650;
+    letter-spacing: -0.02em;
     line-height: 1.2;
 }
 
@@ -837,6 +929,8 @@ form .label:first-of-type {
     height: 100%;
     border-radius: inherit;
     background: var(--accent);
+    transform-origin: left;
+    animation: grow-x 460ms var(--e-out) backwards;
     transition: width 300ms var(--e-out);
 }
 
@@ -1079,6 +1173,9 @@ tr.row-warn {
     min-width: 2px;
     border-radius: 4px;
     background: var(--accent);
+    transform-origin: left;
+    animation: grow-x 340ms var(--e-out) backwards;
+    animation-delay: var(--d, 0ms);
 }
 
 .gantt-bar.st-warn {
@@ -1288,7 +1385,7 @@ td.num {
 }
 
 .demo code {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 10.5px;
     color: var(--faint);
     margin-top: 2px;
@@ -1375,7 +1472,7 @@ td.num {
 }
 
 .feature code {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 11px;
     color: var(--text);
 }
@@ -1398,7 +1495,7 @@ td.num {
 }
 
 .endpoints code {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-family: var(--font-mono);
     font-size: 11px;
     color: var(--muted);
     background: var(--surface-2);
@@ -1487,6 +1584,338 @@ html.js .btn-apply {
     gap: 10px;
     flex-wrap: wrap;
     margin-top: 12px;
+}
+
+
+/* --------------------------------------------------------------------------
+   Keycaps
+   -------------------------------------------------------------------------- */
+
+.kbd {
+    display: inline-grid;
+    place-items: center;
+    min-width: 17px;
+    height: 17px;
+    padding: 0 4px;
+    border-radius: 5px;
+    border: 1px solid var(--line-strong);
+    border-bottom-width: 2px;
+    background: rgba(255, 255, 255, 0.05);
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    font-weight: 500;
+    line-height: 1;
+    color: var(--muted);
+}
+
+.btn .kbd {
+    margin-left: 2px;
+}
+
+.demo-kbd {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+}
+
+
+/* --------------------------------------------------------------------------
+   Confidence meter (in banner chip)
+   -------------------------------------------------------------------------- */
+
+.meter {
+    position: relative;
+    width: 42px;
+    height: 3px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.15);
+    overflow: hidden;
+    flex: none;
+}
+
+.meter::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--accent);
+    transform: scaleX(var(--v, 0));
+    transform-origin: left;
+    animation: meter-fill 500ms var(--e-out) 150ms backwards;
+}
+
+.chip-warn .meter::after {
+    background: var(--warn);
+}
+
+@keyframes meter-fill {
+    from { transform: scaleX(0); }
+}
+
+
+/* --------------------------------------------------------------------------
+   Interactive capability cards
+   -------------------------------------------------------------------------- */
+
+button.feature {
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    position: relative;
+    transition:
+        translate var(--t-fast) var(--e-out),
+        box-shadow var(--t-fast) var(--e-out),
+        background-color var(--t-fast) var(--e-out),
+        scale var(--t-fast) var(--e-out);
+}
+
+button.feature:hover {
+    background: var(--surface-3);
+    box-shadow: var(--ring-hover);
+}
+
+button.feature:active {
+    scale: 0.98;
+}
+
+.feature::after {
+    content: "›";
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    font-size: 16px;
+    line-height: 1;
+    color: var(--muted);
+    opacity: 0;
+    translate: -3px 0;
+    transition:
+        opacity var(--t-fast) var(--e-out),
+        translate var(--t-fast) var(--e-out);
+}
+
+.feature:hover::after {
+    opacity: 1;
+    translate: 0 0;
+}
+
+
+/* --------------------------------------------------------------------------
+   Empty-state actions
+   -------------------------------------------------------------------------- */
+
+.empty-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+
+/* --------------------------------------------------------------------------
+   Session log
+   -------------------------------------------------------------------------- */
+
+.is-hidden {
+    display: none !important;
+}
+
+.event-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 2px;
+    max-height: 260px;
+    overflow: auto;
+}
+
+.event {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    transition: background-color 100ms ease-out;
+}
+
+.event:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+.event-time {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--faint);
+    flex: none;
+}
+
+.event i {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--muted);
+    flex: none;
+}
+
+.kind-ok i {
+    background: var(--info);
+}
+
+.kind-bad i {
+    background: var(--danger);
+}
+
+.kind-info i {
+    background: var(--faint);
+}
+
+.log-hint {
+    font-size: 11px;
+    color: var(--faint);
+    margin: 10px 0 0;
+}
+
+
+/* --------------------------------------------------------------------------
+   Report dialog
+   -------------------------------------------------------------------------- */
+
+#report-dialog {
+    width: min(640px, calc(100vw - 40px));
+    border: 0;
+    border-radius: 20px;
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--pop);
+    padding: 0;
+}
+
+#report-dialog::backdrop {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+#report-dialog[open] {
+    animation: dialog-in 240ms var(--e-out);
+}
+
+#report-dialog[open]::backdrop {
+    animation: backdrop-in 240ms ease-out;
+}
+
+@keyframes dialog-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.96);
+    }
+}
+
+@keyframes backdrop-in {
+    from { opacity: 0; }
+}
+
+.dialog-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--line);
+}
+
+.dialog-head h2 {
+    font-size: 15px;
+    font-weight: 650;
+    flex: 1;
+}
+
+.dialog-head .ico {
+    color: var(--muted);
+}
+
+.dialog-close {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    margin-right: -8px;
+    border-radius: var(--r-btn);
+    transition: background-color var(--t-fast) var(--e-out);
+}
+
+.dialog-close:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.dialog-body {
+    padding: 20px;
+    max-height: min(60vh, 520px);
+    overflow: auto;
+}
+
+.dialog-foot {
+    display: flex;
+    gap: 10px;
+    padding: 14px 20px;
+    border-top: 1px solid var(--line);
+}
+
+.report-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.report-empty {
+    font-size: 13px;
+    color: var(--muted);
+    margin: 0;
+}
+
+.report-stamp {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--faint);
+    margin: 14px 0 0;
+}
+
+
+/* --------------------------------------------------------------------------
+   View Transitions API — swap choreography (graceful fallback in JS)
+   -------------------------------------------------------------------------- */
+
+:root {
+    view-transition-name: none;
+}
+
+#main {
+    view-transition-name: app;
+}
+
+::view-transition-old(app) {
+    animation: vt-exit 140ms var(--e-in) both;
+}
+
+::view-transition-new(app) {
+    animation: vt-enter 260ms var(--e-out) both;
+}
+
+@keyframes vt-exit {
+    to {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+}
+
+@keyframes vt-enter {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
 }
 
 

@@ -50,6 +50,7 @@
             <a class="btn btn-ghost" href="/reset" data-route="/reset" title="Reset sequence">
                 <svg class="ico" viewBox="0 0 24 24"><use href="#i-refresh"></use></svg>
                 <span class="btn-label">Reset</span>
+                <span class="kbd">R</span>
             </a>
 
         </div>
@@ -112,6 +113,11 @@
             <path d="M12 21v-8"></path>
             <path d="M12 13c0-4-2.5-6-6-6 0 4 2 6 6 6Z"></path>
             <path d="M12 10c0-3 2-4.5 5.5-4.5 0 3.5-2 4.5-5.5 4.5Z"></path>
+        </symbol>
+
+        <symbol id="i-x" viewBox="0 0 24 24">
+            <path d="M6 6l12 12"></path>
+            <path d="M18 6 6 18"></path>
         </symbol>
 
         <symbol id="i-image" viewBox="0 0 24 24">
@@ -212,6 +218,47 @@
     </script>
 
 
+    <!-- Hero -->
+
+    <section class="hero anim">
+
+        <span class="eyebrow">PhytoState · Timed-automaton verification for crop growth</span>
+
+        <h1 class="hero-title">Photos in. Verdicts out.</h1>
+
+        <p class="hero-sub">
+            A zero-shot neural classifier reads the growth stage from each field photo,
+            and a timed automaton verifies stage order and dwell time before any
+            observation is accepted.
+        </p>
+
+        <div class="hero-chips">
+
+            <span class="chip">
+                <svg class="ico" viewBox="0 0 24 24"><use href="#i-leaf"></use></svg>
+                {{ profile.name }}
+            </span>
+
+            <span class="chip">
+                <svg class="ico" viewBox="0 0 24 24"><use href="#i-shield"></use></svg>
+                engine timed-automaton/1.0
+            </span>
+
+            <span class="chip">
+                <svg class="ico" viewBox="0 0 24 24"><use href="#i-scan"></use></svg>
+                {{ 'Neural CLIP' if predictor_mode == 'neural' else 'Simulation' }} predictor
+            </span>
+
+            <span class="chip tabular">
+                <svg class="ico" viewBox="0 0 24 24"><use href="#i-terminal"></use></svg>
+                {{ profiles|length }} crop profiles
+            </span>
+
+        </div>
+
+    </section>
+
+
     <!-- Verification result banner -->
 
     {% if valid is defined %}
@@ -238,6 +285,7 @@
                 {% if prediction.confidence is not none %}
 
                 <span class="chip tabular {{ 'chip-warn' if prediction.confidence < 0.45 }}">
+                    <i class="meter" style="--v: {{ prediction.confidence }}"></i>
                     {{ (prediction.confidence * 100)|round|int }}% · {{ prediction.mode }}
                 </span>
 
@@ -285,6 +333,7 @@
                 <button class="btn btn-ghost btn-sim" id="sim-toggle" type="button" aria-pressed="false" title="Fast-forward a full lifecycle — simulated field camera">
                     <svg class="ico" viewBox="0 0 24 24"><use href="#i-play"></use></svg>
                     <span class="btn-label">Simulate crop</span>
+                    <span class="kbd">S</span>
                 </button>
             </div>
 
@@ -430,6 +479,13 @@
                 <svg class="ico" viewBox="0 0 24 24"><use href="#i-leaf"></use></svg>
                 <strong>No stages logged yet</strong>
                 <span>Upload a crop photo or run a scenario to start the lifecycle.</span>
+                <div class="empty-actions">
+                    <button type="button" class="btn btn-primary btn-sm" data-action="simulate">
+                        <svg class="ico ico-play" viewBox="0 0 24 24"><use href="#i-play"></use></svg>
+                        <span>Simulate a crop</span>
+                    </button>
+                    <a class="btn btn-ghost btn-sm" href="/demo/valid" data-route="/demo/valid">Run healthy scenario</a>
+                </div>
             </div>
 
             {% endif %}
@@ -448,6 +504,8 @@
             <h2 id="h-dfa">Lifecycle Automaton</h2>
             <span class="chip">{{ profile.name }} · {{ profile.stages|length }} states</span>
         </div>
+
+        <p class="card-sub">{{ profile.blurb }}</p>
 
         <ol class="dfa">
 
@@ -593,6 +651,8 @@
                 <span class="demo-desc">{{ desc }}</span>
                 <code>{{ endpoint }}</code>
 
+                <span class="kbd demo-kbd">{{ loop.index }}</span>
+
                 <span class="demo-done">
                     <svg class="ico" viewBox="0 0 24 24"><use href="#i-check"></use></svg>
                     run
@@ -614,51 +674,67 @@
         <div class="section-head">
 
             <div>
-                <h2 id="h-cap">What's Under the Hood</h2>
-                <p>Every panel maps directly to a live endpoint — no mock data, no build step.</p>
+                <h2 id="h-cap">Capabilities</h2>
+                <p>Every card is live — click one to see it work.</p>
             </div>
 
         </div>
 
         <div class="features">
 
-            <div class="feature">
+            <button type="button" class="feature" data-action="focus-upload">
                 <span class="feat-ico"><svg class="ico" viewBox="0 0 24 24"><use href="#i-scan"></use></svg></span>
                 <strong>Stage Classifier</strong>
                 <span>POST a crop photo to <code>/predict</code> — the inference pipeline returns the current growth stage.</span>
-            </div>
+            </button>
 
-            <div class="feature">
+            <button type="button" class="feature" data-action="goto-dfa">
                 <span class="feat-ico"><svg class="ico" viewBox="0 0 24 24"><use href="#i-shield"></use></svg></span>
                 <strong>Timed Automaton</strong>
                 <span>Sequences are verified against transition and dwell-time rules before anything is accepted.</span>
-            </div>
+            </button>
 
-            <div class="feature">
+            <button type="button" class="feature" data-action="goto-ledger">
                 <span class="feat-ico"><svg class="ico" viewBox="0 0 24 24"><use href="#i-clock"></use></svg></span>
                 <strong>Dwell-Time Bounds</strong>
                 <span>Per-stage minimum and maximum durations catch premature moves and abnormal stagnation.</span>
-            </div>
+            </button>
 
-            <div class="feature">
+            <button type="button" class="feature" data-action="run-suite">
                 <span class="feat-ico"><svg class="ico" viewBox="0 0 24 24"><use href="#i-play"></use></svg></span>
                 <strong>Scenario Simulator</strong>
                 <span>Five canned lifecycles exercise skip, backward, premature, stagnation and healthy paths.</span>
-            </div>
+            </button>
 
-            <div class="feature">
+            <button type="button" class="feature" data-action="reset">
                 <span class="feat-ico"><svg class="ico" viewBox="0 0 24 24"><use href="#i-refresh"></use></svg></span>
                 <strong>Session Control</strong>
                 <span>One call to <code>/reset</code> clears the growth log and rewinds the model cursor.</span>
-            </div>
+            </button>
 
-            <div class="feature">
+            <button type="button" class="feature" data-action="report">
                 <span class="feat-ico"><svg class="ico" viewBox="0 0 24 24"><use href="#i-terminal"></use></svg></span>
                 <strong>Zero-Build API</strong>
-                <span>Every panel is server-rendered by Flask + Jinja over plain HTTP — inspectable end to end.</span>
-            </div>
+                <span>Every panel is a plain HTTP endpoint — preview the machine-readable report.</span>
+            </button>
 
         </div>
+
+    </section>
+
+
+    <!-- Session log (client-side event trail) -->
+
+    <section class="card anim is-hidden" id="log-card" aria-labelledby="h-log">
+
+        <div class="card-head">
+            <svg class="ico" viewBox="0 0 24 24"><use href="#i-terminal"></use></svg>
+            <h2 id="h-log">Session Log</h2>
+        </div>
+
+        <ol class="event-list" id="event-list"></ol>
+
+        <p class="log-hint">Client-side trail of this session — cleared on reload.</p>
 
     </section>
 
@@ -681,11 +757,33 @@
         </div>
 
         <div class="footer-actions">
-            <a class="btn btn-ghost btn-sm" href="/export?format=md">Download report (.md)</a>
+
+            <button type="button" class="btn btn-ghost btn-sm" data-action="report">
+                Preview report
+                <span class="kbd">D</span>
+            </button>
+
+            <a class="btn btn-ghost btn-sm" href="/export?format=md">
+                Download report (.md)
+                <span class="kbd">E</span>
+            </a>
+
             <a class="btn btn-ghost btn-sm" href="/export?format=json">Download report (.json)</a>
+
+            <button type="button" class="btn btn-ghost btn-sm" id="copy-curl">Copy as cURL</button>
+
         </div>
 
         <p>PhytoState · Flask + Jinja · in-memory session (state clears when the server restarts)</p>
+
+        <p class="footer-hint">
+            <span class="kbd">1</span>–<span class="kbd">5</span> scenarios ·
+            <span class="kbd">S</span> simulate ·
+            <span class="kbd">R</span> reset ·
+            <span class="kbd">A</span> analyze ·
+            <span class="kbd">D</span> report ·
+            <span class="kbd">E</span> export
+        </p>
 
     </footer>
 
@@ -696,6 +794,26 @@
     <svg class="ico" viewBox="0 0 24 24"><use href="#i-alert"></use></svg>
     <span id="toast-msg"></span>
 </div>
+
+
+<dialog id="report-dialog" aria-labelledby="report-title">
+
+    <div class="dialog-head">
+        <svg class="ico" viewBox="0 0 24 24"><use href="#i-terminal"></use></svg>
+        <h2 id="report-title">Verification report</h2>
+        <button type="button" class="dialog-close" id="report-close" aria-label="Close report">
+            <svg class="ico" viewBox="0 0 24 24"><use href="#i-x"></use></svg>
+        </button>
+    </div>
+
+    <div class="dialog-body" id="report-body"></div>
+
+    <div class="dialog-foot">
+        <a class="btn btn-ghost btn-sm" href="/export?format=md">Download .md</a>
+        <a class="btn btn-ghost btn-sm" href="/export?format=json">Download .json</a>
+    </div>
+
+</dialog>
 
 
 </body>

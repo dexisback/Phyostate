@@ -33,6 +33,18 @@
 
     const sim = { on: false, tick: 0, timer: null };
 
+    let lastMs = 0;
+
+    const events = [];
+
+    const ROUTE_LABELS = {
+        "/demo/skip": "Stage Skipping",
+        "/demo-backward": "Backward Transition",
+        "/demo/premature": "Premature Transition",
+        "/demo/stagnation": "Abnormal Stagnation",
+        "/demo/valid": "Healthy Cycle"
+    };
+
     const doneRoutes = new Set();
     let busyEl = null;
     let runningSuite = false;
@@ -51,6 +63,10 @@
         return items;
     }
 
+    function swapContent(cur, next) {
+        cur.innerHTML = next.innerHTML;
+    }
+
     async function apply(html) {
         const doc = new DOMParser().parseFromString(html, "text/html");
         const next = doc.getElementById("main");
@@ -62,21 +78,27 @@
 
         const cur = main();
 
-        // Subtle exit: small translateY, shorter than the entrance
-        cur.querySelectorAll(".anim").forEach(el => el.style.removeProperty("--d"));
-        cur.classList.add("swap-out");
-        await sleep(150);
-
-        cur.innerHTML = next.innerHTML;
-        cur.classList.remove("swap-out");
-        cur.classList.add("swap-in");
-        stagger(cur);
-        await raf2();
-        cur.classList.remove("swap-in");
-
-        window.setTimeout(() => {
+        if (document.startViewTransition && !reduced.matches) {
+            // Buttery crossfade via the View Transitions API (Chromium)
+            const vt = document.startViewTransition(() => swapContent(cur, next));
+            await vt.finished.catch(() => {});
+        } else {
+            // Fallback: subtle exit, then staggered entrance
             cur.querySelectorAll(".anim").forEach(el => el.style.removeProperty("--d"));
-        }, 1000);
+            cur.classList.add("swap-out");
+            await sleep(150);
+
+            swapContent(cur, next);
+            cur.classList.remove("swap-out");
+            cur.classList.add("swap-in");
+            stagger(cur);
+            await raf2();
+            cur.classList.remove("swap-in");
+
+            window.setTimeout(() => {
+                cur.querySelectorAll(".anim").forEach(el => el.style.removeProperty("--d"));
+            }, 1000);
+        }
 
         const banner = $(".banner", cur);
         if (banner) {
@@ -101,6 +123,7 @@
     async function request(url, { method = "GET", body, el } = {}) {
         if (busyEl) return null;
 
+        const t0 = performance.now();
         const wasBusy = el;
         if (el) {
             busyEl = el;
@@ -131,6 +154,7 @@
             return null;
         } finally {
             window.clearTimeout(timeout);
+            lastMs = Math.round(performance.now() - t0);
             if (wasBusy) {
                 busyEl = null;
                 wasBusy.classList.remove("busy");
@@ -145,6 +169,13 @@
         if (ok && route) {
             doneRoutes.add(route);
             link.classList.add("done");
+            const label = ROUTE_LABELS[route];
+            if (label) {
+                const verdict = readVerdict();
+                addEvent(verdict.kind, `Scenario: ${label} — ${verdict.text}`);
+            } else if (route === "/reset") {
+                addEvent("info", "Session reset — lifecycle cleared");
+            }
         }
     }
 
@@ -174,6 +205,16 @@
             btn.disabled = false;
             btn.classList.remove("loading");
             label.textContent = original;
+            return;
+        }
+
+        if (ok) {
+            const pred = readPrediction();
+            if (pred.stage) {
+                addEvent("ok", `Predicted ${pred.stage}${pred.conf ? ` · ${pred.conf}` : ""} · ${lastMs} ms`);
+            } else {
+                addEvent("bad", `Photo rejected by classifier · ${lastMs} ms`);
+            }
         }
     }
 
@@ -194,6 +235,7 @@
         btn.classList.add("busy");
         btn.setAttribute("aria-busy", "true");
         label.textContent = "Running…";
+        addEvent("info", "Running full scenario suite…");
 
         for (const route of [
             "/demo/skip",
@@ -434,6 +476,7 @@
         applyFlags();
         renderGantt();
         syncSimUI();
+        renderLog();
     }
 
     /* ------------------------------------------------------------------ */
@@ -507,6 +550,7 @@
         if (busyEl) return;
         sim.on = true;
         sim.tick = 0;
+        addEvent("info", "Camera simulation started");
         syncSimUI();
         (async () => {
             // Simulation always grows a fresh lifecycle — rewind first
@@ -516,6 +560,7 @@
     }
 
     function stopSim() {
+        if (sim.on) addEvent("info", "Camera simulation stopped");
         sim.on = false;
         if (sim.timer) window.clearTimeout(sim.timer);
         syncSimUI();
@@ -524,7 +569,166 @@
     async function submitProfile(form) {
         if (!form) return;
         if (sim.on) stopSim();          // switching crop aborts any running simulation
-        await request("/profile", { method: "POST", body: new FormData(form) });
+        const ok = await request("/profile", { method: "POST", body: new FormData(form) });
+        if (ok) {
+            const select = form.querySelector("select");
+            const name = (select && select.selectedOptions && select.selectedOptions[0])
+                ? select.selectedOptions[0].text
+                : "new crop";
+            addEvent("info", `Crop profile → ${name} · lifecycle reset`);
+        }
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* Session log, verdict reader, report dialog, capability actions      */
+    /* ------------------------------------------------------------------ */
+
+    const escapeHtml = s => String(s).replace(/[&<>"']/g, c => (
+        { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+    ));
+
+    function addEvent(kind, text) {
+        events.unshift({ time: new Date(), kind, text });
+        if (events.length > 40) events.pop();
+        renderLog();
+    }
+
+    function renderLog() {
+        const card = document.getElementById("log-card");
+        const list = document.getElementById("event-list");
+        if (!card || !list) return;
+        list.innerHTML = "";
+        if (!events.length) {
+            card.classList.add("is-hidden");
+            return;
+        }
+        card.classList.remove("is-hidden");
+        for (const ev of events) {
+            const li = document.createElement("li");
+            li.className = `event kind-${ev.kind}`;
+            const t = document.createElement("span");
+            t.className = "event-time";
+            t.textContent = ev.time.toTimeString().slice(0, 8);
+            const dot = document.createElement("i");
+            const tx = document.createElement("span");
+            tx.textContent = ev.text;
+            li.append(t, dot, tx);
+            list.appendChild(li);
+        }
+    }
+
+    function readVerdict() {
+        const banner = $(".banner");
+        if (!banner) return { kind: "info", text: "no verdict rendered" };
+        const headline = ($(".banner-title", banner) || {}).textContent || "";
+        if (banner.classList.contains("banner-ok")) {
+            const pred = readPrediction();
+            return { kind: "ok", text: pred.stage ? `verified · ${pred.stage}` : "verified" };
+        }
+        return { kind: "bad", text: headline.trim() || "rejected" };
+    }
+
+    function readPrediction() {
+        const chips = [...document.querySelectorAll(".banner-top .chip")]
+            .map(c => c.textContent.trim());
+        const stage = chips.find(t => t.startsWith("Model output:"));
+        const conf = chips.find(t => /^\d+% · /.test(t));
+        return {
+            stage: stage ? stage.replace("Model output:", "").trim() : null,
+            conf: conf || null
+        };
+    }
+
+    async function openReport() {
+        const dlg = document.getElementById("report-dialog");
+        if (!dlg) return;
+        try {
+            const res = await fetch("/export?format=json");
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json();
+            renderReport(dlg, data);
+            dlg.showModal();
+        } catch (err) {
+            toast(err && err.message ? err.message : "Could not load report", "bad");
+        }
+    }
+
+    function renderReport(dlg, data) {
+        const body = $("#report-body", dlg);
+        if (!body) return;
+        const verdict = data.verdict || {};
+        const ok = !!verdict.valid;
+        const rows = (data.observations || []).map(o => {
+            const terminal = o.allowed[0] === 0 && o.allowed[1] === 0;
+            return `<tr>
+                <td class="tabular">${o.index + 1}</td>
+                <td>${escapeHtml(o.stage)}</td>
+                <td class="num tabular">${o.days} d</td>
+                <td class="num tabular">${terminal ? "—" : `${o.allowed[0]}–${o.allowed[1]} d`}</td>
+            </tr>`;
+        }).join("");
+        const msgs = (verdict.messages || []).map(m => `<li>${escapeHtml(m)}</li>`).join("");
+
+        body.innerHTML = `
+            <div class="report-meta">
+                <span class="pill ${ok ? "pill-ok" : "pill-bad"}">${ok ? "VERIFIED" : "REJECTED"}</span>
+                <span class="chip">${escapeHtml((data.profile || {}).name || "")} profile</span>
+                <span class="chip tabular">${(data.observations || []).length} observations</span>
+                <span class="chip">${escapeHtml(data.predictor_mode || "")} predictor</span>
+            </div>
+            ${rows
+                ? `<div class="table-wrap"><table>
+                    <thead><tr><th>#</th><th>Stage</th><th class="num">Days</th><th class="num">Allowed</th></tr></thead>
+                    <tbody>${rows}</tbody>
+                </table></div>`
+                : `<p class="report-empty">No observations logged.</p>`}
+            <ul class="banner-msgs">${msgs}</ul>
+            <p class="report-stamp">Generated ${escapeHtml(String(data.generated_at || "")).replace("T", " ").slice(0, 19)} UTC</p>
+        `;
+    }
+
+    function spotlight(el) {
+        if (!el) return;
+        el.classList.add("spotlight");
+        window.setTimeout(() => el.classList.remove("spotlight"), 1400);
+    }
+
+    function performAction(action) {
+        switch (action) {
+            case "simulate":
+                toggleSim();
+                break;
+            case "focus-upload": {
+                const input = document.getElementById("image-input");
+                if (input) {
+                    input.focus();
+                    input.closest(".card")?.scrollIntoView({
+                        behavior: reduced.matches ? "instant" : "smooth",
+                        block: "start"
+                    });
+                }
+                break;
+            }
+            case "goto-dfa":
+            case "goto-ledger": {
+                const heading = document.getElementById(action === "goto-dfa" ? "h-dfa" : "h-dwell");
+                const card = heading && heading.closest(".card");
+                if (card) {
+                    card.scrollIntoView({ behavior: reduced.matches ? "instant" : "smooth", block: "start" });
+                    spotlight(card);
+                }
+                break;
+            }
+            case "run-suite":
+                $("#run-all")?.click();
+                break;
+            case "reset":
+                request("/reset", {});
+                break;
+            case "report":
+                openReport();
+                break;
+        }
     }
 
     /* ------------------------------------------------------------------ */
@@ -560,6 +764,27 @@
             return;
         }
 
+        if (e.target.closest("#copy-curl")) {
+            const cmd = `curl -F "image=@photo.jpg" -F "duration=2" ${window.location.origin}/predict`;
+            navigator.clipboard.writeText(cmd).then(() => {
+                toast("cURL command copied to clipboard");
+                addEvent("info", "Copied /predict as a cURL command");
+            }).catch(() => toast("Clipboard unavailable", "bad"));
+            return;
+        }
+
+        const exportLink = e.target.closest('a[href*="/export?format="]');
+        if (exportLink && !exportLink.closest("#report-dialog")) {
+            addEvent("info", `Report exported (${exportLink.href.endsWith("md") ? ".md" : ".json"})`);
+            // no preventDefault — the download proceeds natively
+        }
+
+        const actionEl = e.target.closest("[data-action]");
+        if (actionEl) {
+            performAction(actionEl.dataset.action);
+            return;
+        }
+
         const link = e.target.closest("a[data-route]");
         if (link) {
             e.preventDefault();
@@ -570,6 +795,49 @@
     document.addEventListener("change", e => {
         if (e.target.id === "image-input") showFile(e.target);
         if (e.target.id === "profile-select") submitProfile(e.target.form);
+    });
+
+    document.addEventListener("keydown", e => {
+        if (e.repeat || e.metaKey || e.ctrlKey || e.altKey) return;
+
+        const tag = (e.target.tagName || "").toLowerCase();
+        if (tag === "input" || tag === "select" || tag === "textarea" || e.target.isContentEditable) return;
+
+        const dlg = document.getElementById("report-dialog");
+        if (dlg && dlg.open) return;   // Escape is handled natively by the dialog
+
+        const k = e.key.toLowerCase();
+
+        if (k >= "1" && k <= "5") {
+            const card = document.querySelectorAll(".demo")[Number(k) - 1];
+            if (card) {
+                e.preventDefault();
+                followLink(card);
+            }
+        } else if (k === "s") {
+            e.preventDefault();
+            toggleSim();
+        } else if (k === "r") {
+            e.preventDefault();
+            request("/reset", {});
+        } else if (k === "a") {
+            e.preventDefault();
+            const input = document.getElementById("image-input");
+            if (input) {
+                input.focus();
+                input.closest(".card")?.scrollIntoView({
+                    behavior: reduced.matches ? "instant" : "smooth",
+                    block: "start"
+                });
+            }
+        } else if (k === "d") {
+            e.preventDefault();
+            openReport();
+        } else if (k === "e") {
+            e.preventDefault();
+            addEvent("info", "Report exported (.md)");
+            window.location.href = "/export?format=md";
+        }
     });
 
     document.addEventListener("dragover", e => {
@@ -597,6 +865,19 @@
         input.files = dt.files;
         showFile(input);
     });
+
+    /* ------------------------------------------------------------------ */
+    /* One-time bindings (dialog lives outside #main — survives swaps)     */
+    /* ------------------------------------------------------------------ */
+
+    const reportDialog = document.getElementById("report-dialog");
+
+    if (reportDialog) {
+        reportDialog.addEventListener("click", e => {
+            if (e.target === reportDialog) reportDialog.close();   // backdrop click
+        });
+        $("#report-close", reportDialog)?.addEventListener("click", () => reportDialog.close());
+    }
 
     /* ------------------------------------------------------------------ */
     /* Boot entrance                                                       */
