@@ -3,3 +3,4 @@ venv/
 uploads/
 *.pyc
 .DS_Store
+PITCH.md
